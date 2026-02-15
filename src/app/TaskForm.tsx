@@ -1,61 +1,70 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { trpc } from '@/utils/trpc'
+import { trpc } from '@/utils/trpc';
+import { useState } from 'react';
 
 export default function TaskForm() {
-  const [titulo, setTitulo] = useState('')
-  const [descricao, setDescricao] = useState('')
-  const [error, setError] = useState('')
+  const [titulo, setTitulo] = useState('');
+  const [descricao, setDescricao] = useState('');
+  const [error, setError] = useState('');
 
-  const utils = trpc.useUtils()
+  const utils = trpc.useUtils();
 
   const createTask = trpc.task.create.useMutation({
     onSuccess: () => {
       // Reset form
-      setTitulo('')
-      setDescricao('')
-      setError('')
-      
+      setTitulo('');
+      setDescricao('');
+      setError('');
+
       // Invalidate task list to refresh data
-      utils.task.list.invalidate()
+      utils.task.list.invalidate();
     },
     onError: (err) => {
-      setError(err.message)
+      setError(err.message);
     },
-  })
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError('');
 
     // Frontend validation
     if (!titulo.trim()) {
-      setError('Título é obrigatório')
-      return
+      setError('Título é obrigatório');
+      return;
     }
 
     createTask.mutate({
-      titulo: titulo.trim(),
-      descricao: descricao.trim() || undefined,
-    })
-  }
+      title: titulo.trim(),
+      description: descricao.trim() || undefined,
+    });
+  };
 
-  const isSubmitting = createTask.isPending
+  const isSubmitting = createTask.isPending;
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-lg mx-auto p-6 bg-white rounded-lg shadow-md">
+    <form
+      onSubmit={handleSubmit}
+      className="w-full max-w-lg mx-auto p-6 bg-white rounded-lg shadow-md"
+    >
       <h2 className="text-2xl font-bold mb-6 text-gray-800">Nova Tarefa</h2>
 
       <div className="mb-4">
-        <label htmlFor="titulo" className="block text-sm font-medium text-gray-700 mb-2">
+        <label
+          htmlFor="titulo"
+          className="block text-sm font-medium text-gray-700 mb-2"
+        >
           Título <span className="text-red-500">*</span>
         </label>
         <input
           id="titulo"
           type="text"
           value={titulo}
-          onChange={(e) => setTitulo(e.target.value)}
+          onChange={(e) => {
+            setTitulo(e.target.value);
+            if (error) setError('');
+          }}
           disabled={isSubmitting}
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
           placeholder="Digite o título da tarefa"
@@ -63,13 +72,19 @@ export default function TaskForm() {
       </div>
 
       <div className="mb-6">
-        <label htmlFor="descricao" className="block text-sm font-medium text-gray-700 mb-2">
+        <label
+          htmlFor="descricao"
+          className="block text-sm font-medium text-gray-700 mb-2"
+        >
           Descrição
         </label>
         <textarea
           id="descricao"
           value={descricao}
-          onChange={(e) => setDescricao(e.target.value)}
+          onChange={(e) => {
+            setDescricao(e.target.value);
+            if (error) setError('');
+          }}
           disabled={isSubmitting}
           rows={4}
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed resize-none"
@@ -91,5 +106,5 @@ export default function TaskForm() {
         {isSubmitting ? 'Criando...' : 'Criar Tarefa'}
       </button>
     </form>
-  )
+  );
 }

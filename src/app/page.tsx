@@ -1,12 +1,16 @@
-import { getServerCaller } from '@/server/serverCaller'
-import TaskList from './task-list'
+import { getServerCaller } from '@/server/serverCaller';
+import TaskForm from './TaskForm';
+import TaskList from './TaskList';
 
 export default async function Home() {
-  const caller = await getServerCaller()
+  const caller = await getServerCaller();
 
-  const tasks = await caller.task.list({
-    limit: 10,
-  })
+  const tasks = await caller.task.list();
 
-  return <TaskList initialData={tasks} />
+  return (
+    <main>
+      <TaskForm />
+      <TaskList initialData={tasks} />
+    </main>
+  );
 }
