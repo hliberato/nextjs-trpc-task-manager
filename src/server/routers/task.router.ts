@@ -1,16 +1,13 @@
-import {
-  createTaskSchema,
-  Task,
-  taskSchema,
-  updateTaskSchema,
-} from '../schemas/task.schema';
-import { tasksStore } from '../store/task.store';
+import { TRPCError } from '@trpc/server';
+import z from 'zod';
+import { createTaskSchema, updateTaskSchema } from '../schemas/task.schema';
+import { Task, tasksStore } from '../store/task.store';
 import { publicProcedure, router } from '../trpc';
 
 export const taskRouter = router({
   list: publicProcedure.query(() => {
     return Array.from(tasksStore.values()).sort(
-      (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
+      (a, b) => b.createdAt - a.createdAt
     );
   }),
 
@@ -19,7 +16,7 @@ export const taskRouter = router({
       id: crypto.randomUUID(),
       title: input.title,
       description: input.description ?? null,
-      createdAt: new Date(),
+      createdAt: Date.now(), // ✔ corrigido
     };
 
     tasksStore.set(newTask.id, newTask);
@@ -31,7 +28,10 @@ export const taskRouter = router({
     const existingTask = tasksStore.get(input.id);
 
     if (!existingTask) {
-      throw new Error('Task not found');
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Task not found',
+      });
     }
 
     const updatedTask: Task = {
@@ -45,16 +45,15 @@ export const taskRouter = router({
   }),
 
   delete: publicProcedure
-    .input(
-      taskSchema.pick({
-        id: true,
-      })
-    )
+    .input(z.object({ id: z.string() }))
     .mutation(({ input }) => {
       const existingTask = tasksStore.get(input.id);
 
       if (!existingTask) {
-        throw new Error('Task not found');
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Task not found',
+        });
       }
 
       tasksStore.delete(input.id);
