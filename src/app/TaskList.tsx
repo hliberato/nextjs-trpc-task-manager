@@ -19,8 +19,8 @@ type Props = {
  * Implementation:
  * - Uses tRPC's useInfiniteQuery for cursor-based pagination
  * - Intersection Observer detects when user scrolls to bottom
- * - Automatically loads next page (2 tasks) when sentinel is visible
- * - First page shows 3 tasks (from SSR), subsequent pages load 2 each
+ * - Automatically loads next page (3 tasks) when sentinel is visible
+ * - First page shows 3 tasks (from SSR), subsequent pages load 3 each
  *
  * Benefits:
  * - Better performance with large datasets

@@ -34,7 +34,7 @@ export const taskRouter = router({
    *
    * Cursor-based pagination:
    * - First page: returns initial 3 tasks
-   * - Subsequent pages: returns 2 tasks per page
+   * - Subsequent pages: returns 3 tasks per page
    * - Cursor: timestamp of last task in current page
    * - Next cursor: timestamp to fetch older tasks
    *
@@ -54,9 +54,8 @@ export const taskRouter = router({
         (a, b) => b.dataCriacao - a.dataCriacao
       );
 
-      // Determine page size: 3 for first page, 2 for subsequent
-      const isFirstPage = input.cursor === undefined;
-      const limit = isFirstPage ? 3 : 2;
+      // Determine page size: 3 for all pages
+      const limit = 3;
 
       // Filter tasks older than cursor (if cursor exists)
       const filteredTasks = input.cursor
