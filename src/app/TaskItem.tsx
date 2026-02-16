@@ -16,8 +16,8 @@ type Props = {
 export default function TaskItem({ task }: Props) {
   const [isEditing, setIsEditing] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
-  const [title, setTitle] = useState(task.title);
-  const [description, setDescription] = useState(task.description || '');
+  const [title, setTitle] = useState(task.titulo);
+  const [description, setDescription] = useState(task.descricao || '');
   const [error, setError] = useState('');
 
   const utils = trpc.useUtils();
@@ -38,7 +38,7 @@ export default function TaskItem({ task }: Props) {
       }
     },
     onError: (err) => {
-      setError(err.message ?? 'Unexpected error');
+      setError(err.message ?? 'Erro inesperado');
     },
   });
 
@@ -53,7 +53,7 @@ export default function TaskItem({ task }: Props) {
       }
     },
     onError: (err) => {
-      setError(err.message ?? 'Unexpected error');
+      setError(err.message ?? 'Erro inesperado');
     },
   });
 
@@ -61,20 +61,20 @@ export default function TaskItem({ task }: Props) {
     setError('');
 
     if (!title.trim()) {
-      setError('Title is required');
+      setError('Título é obrigatório');
       return;
     }
 
     updateTask.mutate({
       id: task.id,
-      title: title.trim(),
-      description: description.trim() || undefined,
+      titulo: title.trim(),
+      descricao: description.trim() || undefined,
     });
   };
 
   const handleCancel = () => {
-    setTitle(task.title);
-    setDescription(task.description || '');
+    setTitle(task.titulo);
+    setDescription(task.descricao || '');
     setError('');
     setIsEditing(false);
   };
@@ -94,10 +94,10 @@ export default function TaskItem({ task }: Props) {
     setIsConfirmingDelete(false);
   };
 
-  const originalDescription = task.description ?? '';
+  const originalDescription = task.descricao ?? '';
 
   const hasChanges =
-    title.trim() !== task.title || description.trim() !== originalDescription;
+    title.trim() !== task.titulo || description.trim() !== originalDescription;
 
   const isSaving = updateTask.isPending;
   const isDeleting = deleteTask.isPending;
@@ -111,7 +111,7 @@ export default function TaskItem({ task }: Props) {
               htmlFor={`title-${task.id}`}
               className="block text-sm font-medium text-gray-700 mb-2"
             >
-              Title <span className="text-red-500">*</span>
+              Título <span className="text-red-500">*</span>
             </label>
             <input
               id={`title-${task.id}`}
@@ -123,7 +123,7 @@ export default function TaskItem({ task }: Props) {
               }}
               disabled={isSaving}
               className="w-full px-4 py-2.5 text-gray-900 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed transition-colors"
-              placeholder="Enter title"
+              placeholder="Digite o título"
             />
           </div>
 
@@ -132,7 +132,7 @@ export default function TaskItem({ task }: Props) {
               htmlFor={`description-${task.id}`}
               className="block text-sm font-medium text-gray-700 mb-2"
             >
-              Description
+              Descrição
             </label>
             <textarea
               id={`description-${task.id}`}
@@ -144,7 +144,7 @@ export default function TaskItem({ task }: Props) {
               disabled={isSaving}
               rows={3}
               className="w-full px-4 py-2.5 text-gray-900 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed resize-none transition-colors"
-              placeholder="Enter description (optional)"
+              placeholder="Digite a descrição (opcional)"
             />
           </div>
 
@@ -160,14 +160,14 @@ export default function TaskItem({ task }: Props) {
               disabled={isSaving || !hasChanges}
               className="px-5 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed transition-all duration-200"
             >
-              {isSaving ? 'Saving...' : 'Save'}
+              {isSaving ? 'Salvando...' : 'Salvar'}
             </button>
             <button
               onClick={handleCancel}
               disabled={isSaving}
               className="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed transition-all duration-200"
             >
-              Cancel
+              Cancelar
             </button>
           </div>
         </div>
@@ -180,11 +180,11 @@ export default function TaskItem({ task }: Props) {
       <div className="flex justify-between items-start gap-4">
         <div className="flex-1 min-w-0">
           <h3 className="text-lg font-medium text-gray-900 mb-1">
-            {task.title}
+            {task.titulo}
           </h3>
-          {task.description && (
+          {task.descricao && (
             <p className="text-sm text-gray-600 whitespace-pre-wrap leading-relaxed">
-              {task.description}
+              {task.descricao}
             </p>
           )}
         </div>
@@ -194,13 +194,13 @@ export default function TaskItem({ task }: Props) {
               onClick={() => setIsEditing(true)}
               className="px-3 py-1.5 text-xs font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-all duration-200"
             >
-              Edit
+              Editar
             </button>
             <button
               onClick={handleDelete}
               className="px-3 py-1.5 text-xs font-medium bg-red-50 text-red-700 rounded-lg hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 transition-all duration-200"
             >
-              Delete
+              Deletar
             </button>
           </div>
         )}
@@ -210,7 +210,7 @@ export default function TaskItem({ task }: Props) {
         <div className="mt-5 pt-5 border-t border-gray-200">
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
             <p className="text-sm font-medium text-gray-900 mb-4">
-              Are you sure you want to delete this task?
+              Tem certeza que deseja deletar esta tarefa?
             </p>
 
             {error && (
@@ -225,14 +225,14 @@ export default function TaskItem({ task }: Props) {
                 disabled={isDeleting}
                 className="px-5 py-2.5 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed transition-all duration-200"
               >
-                {isDeleting ? 'Deleting...' : 'Confirm'}
+                {isDeleting ? 'Deletando...' : 'Confirmar'}
               </button>
               <button
                 onClick={handleCancelDelete}
                 disabled={isDeleting}
                 className="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed transition-all duration-200"
               >
-                Cancel
+                Cancelar
               </button>
             </div>
           </div>

@@ -23,7 +23,7 @@ export default function TaskList({ initialData }: Props) {
   if (items.length === 0) {
     return (
       <div>
-        <h1 className="text-3xl font-semibold text-gray-900 mb-6">Tasks</h1>
+        <h1 className="text-3xl font-semibold text-gray-900 mb-6">Tarefas</h1>
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-12 text-center">
           <div className="max-w-sm mx-auto">
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -42,10 +42,10 @@ export default function TaskList({ initialData }: Props) {
               </svg>
             </div>
             <h3 className="text-lg font-medium text-gray-900 mb-1">
-              No tasks yet
+              Nenhuma tarefa ainda
             </h3>
             <p className="text-sm text-gray-500">
-              Create your first task to get started.
+              Crie sua primeira tarefa para começar.
             </p>
           </div>
         </div>
@@ -55,7 +55,7 @@ export default function TaskList({ initialData }: Props) {
 
   return (
     <div>
-      <h1 className="text-3xl font-semibold text-gray-900 mb-6">Tasks</h1>
+      <h1 className="text-3xl font-semibold text-gray-900 mb-6">Tarefas</h1>
       <div className="space-y-3">
         {items.map((task) => (
           <TaskItem key={task.id} task={task} />

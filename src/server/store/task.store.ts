@@ -1,8 +1,8 @@
 export type Task = {
   id: string;
-  title: string;
-  description: string | null;
-  createdAt: number;
+  titulo: string;
+  descricao: string | null;
+  dataCriacao: number;
 };
 
 export const tasksStore = new Map<string, Task>();

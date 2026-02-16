@@ -7,16 +7,16 @@ import { publicProcedure, router } from '../trpc';
 export const taskRouter = router({
   list: publicProcedure.query(() => {
     return Array.from(tasksStore.values()).sort(
-      (a, b) => b.createdAt - a.createdAt
+      (a, b) => b.dataCriacao - a.dataCriacao
     );
   }),
 
   create: publicProcedure.input(createTaskSchema).mutation(({ input }) => {
     const newTask: Task = {
       id: crypto.randomUUID(),
-      title: input.title,
-      description: input.description ?? null,
-      createdAt: Date.now(),
+      titulo: input.titulo,
+      descricao: input.descricao ?? null,
+      dataCriacao: Date.now(),
     };
 
     tasksStore.set(newTask.id, newTask);
