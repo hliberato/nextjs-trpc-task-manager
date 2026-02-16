@@ -4,6 +4,14 @@ Full-stack task management application demonstrating modern web architecture wit
 
 ---
 
+## 🚀 Live Demo
+
+**[View Demo on Vercel](https://nextjs-trpc-task-manager-fyik.vercel.app/)**
+
+> **Note:** This is a demo application with in-memory storage. All data resets when the serverless function restarts. The app includes 15 pre-populated tasks for testing purposes.
+
+---
+
 ## Tech Stack
 
 - **Next.js 15.3.0** - App Router, React Server Components
