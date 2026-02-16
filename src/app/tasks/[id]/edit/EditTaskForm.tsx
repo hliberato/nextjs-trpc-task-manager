@@ -29,9 +29,12 @@ export default function EditTaskForm({ task }: Props) {
   const [error, setError] = useState('');
 
   const router = useRouter();
+  const utils = trpc.useUtils();
 
   const updateTask = trpc.task.update.useMutation({
     onSuccess: () => {
+      // Invalidate infinite query to refetch all pages
+      utils.task.infiniteList.invalidate();
       router.push('/');
       router.refresh();
     },

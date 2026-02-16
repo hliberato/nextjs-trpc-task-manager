@@ -20,9 +20,12 @@ export default function NewTaskForm() {
   const [error, setError] = useState('');
 
   const router = useRouter();
+  const utils = trpc.useUtils();
 
   const createTask = trpc.task.create.useMutation({
     onSuccess: () => {
+      // Invalidate infinite query to refetch all pages
+      utils.task.infiniteList.invalidate();
       router.push('/');
       router.refresh();
     },

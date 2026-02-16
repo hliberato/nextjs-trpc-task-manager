@@ -41,17 +41,20 @@ export default function TaskItem({ task }: Props) {
   const [error, setError] = useState('');
 
   const router = useRouter();
+  const utils = trpc.useUtils();
 
   /**
-   * Delete mutation with optimistic cache update
+   * Delete mutation with cache invalidation
    *
-   * Strategy: Filter out deleted task from cache
-   * - Removes task immediately from UI
+   * Strategy: Invalidate infinite query to refetch all pages
+   * - Ensures consistent data after deletion
    * - Uses router.refresh() to sync SSR cache
-   * - If mutation fails, React Query will rollback automatically
+   * - React Query handles loading states automatically
    */
   const deleteTask = trpc.task.delete.useMutation({
     onSuccess: () => {
+      // Invalidate infinite query to refetch all pages
+      utils.task.infiniteList.invalidate();
       router.refresh();
     },
     onError: (err) => {
@@ -59,39 +62,6 @@ export default function TaskItem({ task }: Props) {
     },
   });
 
-  const handleSave = () => {
-    setError('');
-
-    if (!title.trim()) {
-      setError('Título é obrigatório');
-      return;
-    }
-
-    updateTask.mutate({
-      id: task.id,
-      titulo: title.trim(),
-      descricao: description.trim() || undefined,
-    });
-  };
-
-  const handleCancel = () => {
-    setTitle(task.titulo);
-    setDescription(task.descricao || '');
-    setError('');
-    setIsEditing(false);
-  };
-
-  const handleDelete = () => {
-    setError('');
-    setIsConfirmingDelete(true);
-  };
-
-  const handleConfirmDelete = () => {
-    setError('');
-    deleteTask.mutate({ id: task.id });
-  };
-
-  const handleCancelDelete = () => {
   const handleDelete = () => {
     setError('');
     setIsConfirmingDelete(true);

@@ -21,12 +21,60 @@ export const taskRouter = router({
    * - Ensures consistent ordering
    * - Facilitates future pagination (cursor-based)
    * - Client doesn't need to re-sort on each update
+   * - Used for SSR initial page load
    */
   list: publicProcedure.query(() => {
     return Array.from(tasksStore.values()).sort(
       (a, b) => b.dataCriacao - a.dataCriacao
     );
   }),
+
+  /**
+   * INFINITE LIST: Paginated task list for infinite scroll
+   *
+   * Cursor-based pagination:
+   * - First page: returns initial 3 tasks
+   * - Subsequent pages: returns 2 tasks per page
+   * - Cursor: timestamp of last task in current page
+   * - Next cursor: timestamp to fetch older tasks
+   *
+   * Benefits over offset-based:
+   * - Handles real-time updates (new tasks don't shift pages)
+   * - No duplicate items if data changes during pagination
+   * - Efficient for sorted time-based data
+   */
+  infiniteList: publicProcedure
+    .input(
+      z.object({
+        cursor: z.number().optional(), // timestamp of last task from previous page
+      })
+    )
+    .query(({ input }) => {
+      const allTasks = Array.from(tasksStore.values()).sort(
+        (a, b) => b.dataCriacao - a.dataCriacao
+      );
+
+      // Determine page size: 3 for first page, 2 for subsequent
+      const isFirstPage = input.cursor === undefined;
+      const limit = isFirstPage ? 3 : 2;
+
+      // Filter tasks older than cursor (if cursor exists)
+      const filteredTasks = input.cursor
+        ? allTasks.filter((task) => task.dataCriacao < input.cursor!)
+        : allTasks;
+
+      // Get current page tasks
+      const tasks = filteredTasks.slice(0, limit);
+
+      // Determine next cursor (timestamp of last task in current page)
+      const nextCursor =
+        tasks.length === limit ? tasks[tasks.length - 1].dataCriacao : null;
+
+      return {
+        tasks,
+        nextCursor,
+      };
+    }),
 
   /**
    * CREATE: Creates new task
