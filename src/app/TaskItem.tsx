@@ -5,6 +5,8 @@ import { useState } from 'react';
 
 import type { AppRouter } from '@/server/root';
 import { inferRouterOutputs } from '@trpc/server';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 type RouterOutput = inferRouterOutputs<AppRouter>;
 
 /**
@@ -22,73 +24,35 @@ type Props = {
 };
 
 /**
- * TaskItem: Component for displaying and editing individual tasks
+ * TaskItem: Component for displaying individual tasks
  *
  * Features:
- * - Inline editing (toggle between view/edit modes)
- * - Delete confirmation dialog
- * - Optimistic updates for instant UI feedback
- * - Loading states during mutations
+ * - View-only display (edit redirects to dedicated page)
+ * - Inline delete with confirmation dialog
+ * - Optimistic delete for instant UI feedback
  *
- * State machine:
- * - View mode: displays task with Edit/Delete buttons
- * - Edit mode: shows form with Save/Cancel buttons
- * - Delete confirmation: shows warning with Confirm/Cancel buttons
+ * Design decision: Separate edit page instead of inline editing
+ * - Matches assessment requirement for "Página de Criação/Atualização"
+ * - Clearer navigation flow
+ * - Delete kept inline as per requirement: "exclusão diretamente na listagem"
  */
 export default function TaskItem({ task }: Props) {
-  const [isEditing, setIsEditing] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
-  const [title, setTitle] = useState(task.titulo);
-  const [description, setDescription] = useState(task.descricao || '');
   const [error, setError] = useState('');
 
-  const utils = trpc.useUtils();
-
-  /**
-   * Update mutation with optimistic cache update
-   *
-   * Strategy: Manually update cache instead of refetch
-   * - Finds task by ID and replaces it with updated version
-   * - Preserves list order and other tasks
-   * - Instant UI update without server roundtrip
-   */
-  const updateTask = trpc.task.update.useMutation({
-    onSuccess: (updatedTask) => {
-      setIsEditing(false);
-      setError('');
-
-      const currentData = utils.task.list.getData();
-      if (currentData) {
-        const updatedData = currentData.map((t) =>
-          t.id === updatedTask.id ? updatedTask : t
-        );
-        utils.task.list.setData(undefined, updatedData);
-      } else {
-        utils.task.list.invalidate();
-      }
-    },
-    onError: (err) => {
-      setError(err.message ?? 'Erro inesperado');
-    },
-  });
+  const router = useRouter();
 
   /**
    * Delete mutation with optimistic cache update
    *
    * Strategy: Filter out deleted task from cache
    * - Removes task immediately from UI
-   * - No refetch needed
+   * - Uses router.refresh() to sync SSR cache
    * - If mutation fails, React Query will rollback automatically
    */
   const deleteTask = trpc.task.delete.useMutation({
     onSuccess: () => {
-      const currentData = utils.task.list.getData();
-      if (currentData) {
-        const updatedData = currentData.filter((t) => t.id !== task.id);
-        utils.task.list.setData(undefined, updatedData);
-      } else {
-        utils.task.list.invalidate();
-      }
+      router.refresh();
     },
     onError: (err) => {
       setError(err.message ?? 'Erro inesperado');
@@ -128,90 +92,22 @@ export default function TaskItem({ task }: Props) {
   };
 
   const handleCancelDelete = () => {
+  const handleDelete = () => {
+    setError('');
+    setIsConfirmingDelete(true);
+  };
+
+  const handleConfirmDelete = () => {
+    setError('');
+    deleteTask.mutate({ id: task.id });
+  };
+
+  const handleCancelDelete = () => {
     setError('');
     setIsConfirmingDelete(false);
   };
 
-  const originalDescription = task.descricao ?? '';
-
-  const hasChanges =
-    title.trim() !== task.titulo || description.trim() !== originalDescription;
-
-  const isSaving = updateTask.isPending;
   const isDeleting = deleteTask.isPending;
-
-  if (isEditing) {
-    return (
-      <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6">
-        <div className="space-y-5">
-          <div>
-            <label
-              htmlFor={`title-${task.id}`}
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              Título <span className="text-red-500">*</span>
-            </label>
-            <input
-              id={`title-${task.id}`}
-              type="text"
-              value={title}
-              onChange={(e) => {
-                setTitle(e.target.value);
-                if (error) setError('');
-              }}
-              disabled={isSaving}
-              className="w-full px-4 py-2.5 text-gray-900 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed transition-colors"
-              placeholder="Digite o título"
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor={`description-${task.id}`}
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              Descrição
-            </label>
-            <textarea
-              id={`description-${task.id}`}
-              value={description}
-              onChange={(e) => {
-                setDescription(e.target.value);
-                if (error) setError('');
-              }}
-              disabled={isSaving}
-              rows={3}
-              className="w-full px-4 py-2.5 text-gray-900 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed resize-none transition-colors"
-              placeholder="Digite a descrição (opcional)"
-            />
-          </div>
-
-          {error && (
-            <div className="p-3 bg-red-50 border border-red-100 rounded-lg">
-              <p className="text-sm text-red-700">{error}</p>
-            </div>
-          )}
-
-          <div className="flex gap-3 pt-1">
-            <button
-              onClick={handleSave}
-              disabled={isSaving || !hasChanges}
-              className="px-5 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed transition-all duration-200"
-            >
-              {isSaving ? 'Salvando...' : 'Salvar'}
-            </button>
-            <button
-              onClick={handleCancel}
-              disabled={isSaving}
-              className="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed transition-all duration-200"
-            >
-              Cancelar
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl shadow-sm hover:border-gray-300 transition-all duration-200 p-6">
@@ -228,12 +124,12 @@ export default function TaskItem({ task }: Props) {
         </div>
         {!isConfirmingDelete && (
           <div className="flex gap-2 flex-shrink-0">
-            <button
-              onClick={() => setIsEditing(true)}
+            <Link
+              href={`/tasks/${task.id}/edit`}
               className="px-3 py-1.5 text-xs font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-all duration-200"
             >
               Editar
-            </button>
+            </Link>
             <button
               onClick={handleDelete}
               className="px-3 py-1.5 text-xs font-medium bg-red-50 text-red-700 rounded-lg hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 transition-all duration-200"
