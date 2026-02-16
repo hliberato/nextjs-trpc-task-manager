@@ -4,20 +4,18 @@ import { trpc } from '@/utils/trpc';
 import { useState } from 'react';
 
 export default function TaskForm() {
-  const [titulo, setTitulo] = useState('');
-  const [descricao, setDescricao] = useState('');
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
   const [error, setError] = useState('');
 
   const utils = trpc.useUtils();
 
   const createTask = trpc.task.create.useMutation({
     onSuccess: (newTask) => {
-      // Reset form
-      setTitulo('');
-      setDescricao('');
+      setTitle('');
+      setDescription('');
       setError('');
 
-      // Update cache with new task
       const currentData = utils.task.list.getData();
       if (currentData) {
         utils.task.list.setData(undefined, [newTask, ...currentData]);
@@ -34,15 +32,14 @@ export default function TaskForm() {
     e.preventDefault();
     setError('');
 
-    // Frontend validation
-    if (!titulo.trim()) {
-      setError('Título é obrigatório');
+    if (!title.trim()) {
+      setError('Title is required');
       return;
     }
 
     createTask.mutate({
-      title: titulo.trim(),
-      description: descricao.trim() || undefined,
+      title: title.trim(),
+      description: description.trim() || undefined,
     });
   };
 
@@ -60,17 +57,17 @@ export default function TaskForm() {
       <div className="space-y-6">
         <div>
           <label
-            htmlFor="titulo"
+            htmlFor="title"
             className="block text-sm font-medium text-gray-700 mb-2"
           >
             Title <span className="text-red-500">*</span>
           </label>
           <input
-            id="titulo"
+            id="title"
             type="text"
-            value={titulo}
+            value={title}
             onChange={(e) => {
-              setTitulo(e.target.value);
+              setTitle(e.target.value);
               if (error) setError('');
             }}
             disabled={isSubmitting}
@@ -81,16 +78,16 @@ export default function TaskForm() {
 
         <div>
           <label
-            htmlFor="descricao"
+            htmlFor="description"
             className="block text-sm font-medium text-gray-700 mb-2"
           >
             Description
           </label>
           <textarea
-            id="descricao"
-            value={descricao}
+            id="description"
+            value={description}
             onChange={(e) => {
-              setDescricao(e.target.value);
+              setDescription(e.target.value);
               if (error) setError('');
             }}
             disabled={isSubmitting}

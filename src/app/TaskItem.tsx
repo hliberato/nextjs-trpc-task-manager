@@ -16,19 +16,17 @@ type Props = {
 export default function TaskItem({ task }: Props) {
   const [isEditing, setIsEditing] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
-  const [titulo, setTitulo] = useState(task.title);
-  const [descricao, setDescricao] = useState(task.description || '');
+  const [title, setTitle] = useState(task.title);
+  const [description, setDescription] = useState(task.description || '');
   const [error, setError] = useState('');
 
   const utils = trpc.useUtils();
 
   const updateTask = trpc.task.update.useMutation({
     onSuccess: (updatedTask) => {
-      // Exit edit mode
       setIsEditing(false);
       setError('');
 
-      // Update cache with updated task
       const currentData = utils.task.list.getData();
       if (currentData) {
         const updatedData = currentData.map((t) =>
@@ -46,7 +44,6 @@ export default function TaskItem({ task }: Props) {
 
   const deleteTask = trpc.task.delete.useMutation({
     onSuccess: () => {
-      // Remove task from cache
       const currentData = utils.task.list.getData();
       if (currentData) {
         const updatedData = currentData.filter((t) => t.id !== task.id);
@@ -63,23 +60,21 @@ export default function TaskItem({ task }: Props) {
   const handleSave = () => {
     setError('');
 
-    // Frontend validation
-    if (!titulo.trim()) {
-      setError('Título é obrigatório');
+    if (!title.trim()) {
+      setError('Title is required');
       return;
     }
 
     updateTask.mutate({
       id: task.id,
-      title: titulo.trim(),
-      description: descricao.trim() || undefined,
+      title: title.trim(),
+      description: description.trim() || undefined,
     });
   };
 
   const handleCancel = () => {
-    // Reset to original values
-    setTitulo(task.title);
-    setDescricao(task.description || '');
+    setTitle(task.title);
+    setDescription(task.description || '');
     setError('');
     setIsEditing(false);
   };
@@ -99,10 +94,10 @@ export default function TaskItem({ task }: Props) {
     setIsConfirmingDelete(false);
   };
 
-  const originalDescricao = task.description ?? '';
+  const originalDescription = task.description ?? '';
 
   const hasChanges =
-    titulo.trim() !== task.title || descricao.trim() !== originalDescricao;
+    title.trim() !== task.title || description.trim() !== originalDescription;
 
   const isSaving = updateTask.isPending;
   const isDeleting = deleteTask.isPending;
@@ -113,17 +108,17 @@ export default function TaskItem({ task }: Props) {
         <div className="space-y-5">
           <div>
             <label
-              htmlFor={`titulo-${task.id}`}
+              htmlFor={`title-${task.id}`}
               className="block text-sm font-medium text-gray-700 mb-2"
             >
               Title <span className="text-red-500">*</span>
             </label>
             <input
-              id={`titulo-${task.id}`}
+              id={`title-${task.id}`}
               type="text"
-              value={titulo}
+              value={title}
               onChange={(e) => {
-                setTitulo(e.target.value);
+                setTitle(e.target.value);
                 if (error) setError('');
               }}
               disabled={isSaving}
@@ -134,16 +129,16 @@ export default function TaskItem({ task }: Props) {
 
           <div>
             <label
-              htmlFor={`descricao-${task.id}`}
+              htmlFor={`description-${task.id}`}
               className="block text-sm font-medium text-gray-700 mb-2"
             >
               Description
             </label>
             <textarea
-              id={`descricao-${task.id}`}
-              value={descricao}
+              id={`description-${task.id}`}
+              value={description}
               onChange={(e) => {
-                setDescricao(e.target.value);
+                setDescription(e.target.value);
                 if (error) setError('');
               }}
               disabled={isSaving}
