@@ -7,6 +7,7 @@ import type { AppRouter } from '@/server/root';
 import { inferRouterOutputs } from '@trpc/server';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useToast } from './ToastContext';
 type RouterOutput = inferRouterOutputs<AppRouter>;
 
 /**
@@ -29,7 +30,7 @@ type Props = {
  * Features:
  * - View-only display (edit redirects to dedicated page)
  * - Inline delete with confirmation dialog
- * - Optimistic delete for instant UI feedback
+ * - Toast notifications for success/error feedback
  *
  * Design decision: Separate edit page instead of inline editing
  * - Matches assessment requirement for "Página de Criação/Atualização"
@@ -38,42 +39,41 @@ type Props = {
  */
 export default function TaskItem({ task }: Props) {
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
-  const [error, setError] = useState('');
 
   const router = useRouter();
   const utils = trpc.useUtils();
+  const { showToast } = useToast();
 
   /**
-   * Delete mutation with cache invalidation
+   * Delete mutation with cache invalidation and toast feedback
    *
    * Strategy: Invalidate infinite query to refetch all pages
    * - Ensures consistent data after deletion
    * - Uses router.refresh() to sync SSR cache
-   * - React Query handles loading states automatically
+   * - Shows success/error toast for user feedback
    */
   const deleteTask = trpc.task.delete.useMutation({
     onSuccess: () => {
       // Invalidate infinite query to refetch all pages
       utils.task.infiniteList.invalidate();
       router.refresh();
+      setIsConfirmingDelete(false);
+      showToast('Tarefa deletada com sucesso', 'success');
     },
     onError: (err) => {
-      setError(err.message ?? 'Erro inesperado');
+      showToast(err.message ?? 'Erro ao deletar tarefa', 'error');
     },
   });
 
   const handleDelete = () => {
-    setError('');
     setIsConfirmingDelete(true);
   };
 
   const handleConfirmDelete = () => {
-    setError('');
     deleteTask.mutate({ id: task.id });
   };
 
   const handleCancelDelete = () => {
-    setError('');
     setIsConfirmingDelete(false);
   };
 
@@ -116,12 +116,6 @@ export default function TaskItem({ task }: Props) {
             <p className="text-sm font-medium text-gray-900 mb-4">
               Tem certeza que deseja deletar esta tarefa?
             </p>
-
-            {error && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-lg">
-                <p className="text-sm text-red-700">{error}</p>
-              </div>
-            )}
 
             <div className="flex gap-3">
               <button

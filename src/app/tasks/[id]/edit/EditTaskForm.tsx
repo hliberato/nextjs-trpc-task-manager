@@ -1,5 +1,6 @@
 'use client';
 
+import { useToast } from '@/app/ToastContext';
 import { AppRouter } from '@/server/root';
 import { trpc } from '@/utils/trpc';
 import { inferRouterOutputs } from '@trpc/server';
@@ -21,6 +22,7 @@ type Props = {
  * - Pre-populated with current task data
  * - Redirects to home after successful update
  * - Has cancel button to return without saving
+ * - Toast notifications for success/error feedback
  * - Uses router.refresh() to invalidate SSR cache after update
  */
 export default function EditTaskForm({ task }: Props) {
@@ -30,16 +32,19 @@ export default function EditTaskForm({ task }: Props) {
 
   const router = useRouter();
   const utils = trpc.useUtils();
+  const { showToast } = useToast();
 
   const updateTask = trpc.task.update.useMutation({
     onSuccess: () => {
       // Invalidate infinite query to refetch all pages
       utils.task.infiniteList.invalidate();
+      showToast('Tarefa atualizada com sucesso', 'success');
       router.push('/');
       router.refresh();
     },
     onError: (err) => {
       setError(err.message ?? 'Erro inesperado');
+      showToast(err.message ?? 'Erro ao atualizar tarefa', 'error');
     },
   });
 

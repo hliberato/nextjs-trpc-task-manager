@@ -1,5 +1,6 @@
 'use client';
 
+import { useToast } from '@/app/ToastContext';
 import { trpc } from '@/utils/trpc';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -12,7 +13,7 @@ import { useState } from 'react';
  * - Redirects to home after successful creation
  * - Has back button to return without creating
  * - Full page layout for better UX
- * - No optimistic updates needed (user leaves page)
+ * - Toast notifications for success/error feedback
  */
 export default function NewTaskForm() {
   const [titulo, setTitulo] = useState('');
@@ -21,16 +22,19 @@ export default function NewTaskForm() {
 
   const router = useRouter();
   const utils = trpc.useUtils();
+  const { showToast } = useToast();
 
   const createTask = trpc.task.create.useMutation({
     onSuccess: () => {
       // Invalidate infinite query to refetch all pages
       utils.task.infiniteList.invalidate();
+      showToast('Tarefa criada com sucesso', 'success');
       router.push('/');
       router.refresh();
     },
     onError: (err) => {
       setError(err.message ?? 'Erro inesperado');
+      showToast(err.message ?? 'Erro ao criar tarefa', 'error');
     },
   });
 

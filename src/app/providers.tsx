@@ -4,6 +4,7 @@ import { trpc } from '@/utils/trpc';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { httpBatchLink } from '@trpc/client';
 import { useState } from 'react';
+import { ToastProvider } from './ToastContext';
 
 /**
  * Providers: Root provider component for tRPC and React Query
@@ -65,7 +66,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      <QueryClientProvider client={queryClient}>
+        <ToastProvider>{children}</ToastProvider>
+      </QueryClientProvider>
     </trpc.Provider>
   );
 }
