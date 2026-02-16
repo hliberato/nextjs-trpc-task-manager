@@ -33,7 +33,7 @@ export const taskRouter = router({
    * INFINITE LIST: Paginated task list for infinite scroll
    *
    * Cursor-based pagination:
-   * - First page: returns initial 9 tasks (ensures screen is filled and sentinel is below fold)
+   * - First page: returns initial 7 tasks (ensures screen is filled and sentinel is below fold)
    * - Subsequent pages: returns 3 tasks per page (smooth scrolling)
    * - Cursor: timestamp of last task in current page
    * - Next cursor: timestamp to fetch older tasks
@@ -71,9 +71,9 @@ export const taskRouter = router({
         (a, b) => b.dataCriacao - a.dataCriacao
       );
 
-      // Determine page size: 9 for first page, 3 for subsequent
+      // Determine page size: 7 for first page, 3 for subsequent
       const isFirstPage = input.cursor === undefined;
-      const limit = isFirstPage ? 9 : 3;
+      const limit = isFirstPage ? 7 : 3;
 
       // Filter tasks older than cursor (if cursor exists)
       const filteredTasks = input.cursor

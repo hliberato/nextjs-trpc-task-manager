@@ -20,7 +20,7 @@ type Props = {
  * - Uses tRPC's useInfiniteQuery for cursor-based pagination
  * - Intersection Observer detects when user scrolls to bottom
  * - Automatically loads next page (3 tasks) when sentinel is visible
- * - First page shows 9 tasks (from SSR) to ensure sentinel is below viewport, subsequent pages load 3 each
+ * - First page shows 7 tasks (from SSR) to ensure sentinel is below viewport, subsequent pages load 3 each
  *
  * Benefits:
  * - Better performance with large datasets
@@ -37,9 +37,9 @@ export default function TaskList({ initialData }: Props) {
         initialData: {
           pages: [
             {
-              tasks: initialData.slice(0, 9),
+              tasks: initialData.slice(0, 7),
               nextCursor:
-                initialData.length > 9 ? initialData[8].dataCriacao : null,
+                initialData.length > 7 ? initialData[6].dataCriacao : null,
             },
           ],
           pageParams: [undefined],

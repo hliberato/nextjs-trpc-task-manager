@@ -108,6 +108,24 @@ const seedTasks: Task[] = [
     descricao: 'Adicionar funcionalidade de busca por título e descrição',
     dataCriacao: Date.now() - 43200000, // 12 horas atrás
   },
+  {
+    id: '550e8400-e29b-41d4-a716-446655440013',
+    titulo: 'Configurar monitoramento',
+    descricao: 'Integrar Sentry para tracking de erros em produção',
+    dataCriacao: Date.now() - 46800000, // 13 horas atrás
+  },
+  {
+    id: '550e8400-e29b-41d4-a716-446655440014',
+    titulo: 'Implementar filtros',
+    descricao: null,
+    dataCriacao: Date.now() - 50400000, // 14 horas atrás
+  },
+  {
+    id: '550e8400-e29b-41d4-a716-446655440015',
+    titulo: 'Adicionar exportação de dados',
+    descricao: 'Permitir exportar lista de tarefas em CSV e JSON',
+    dataCriacao: Date.now() - 54000000, // 15 horas atrás
+  },
 ];
 
 // Populate store with seed data
