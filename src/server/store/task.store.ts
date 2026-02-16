@@ -109,7 +109,6 @@ const seedTasks: Task[] = [
     dataCriacao: Date.now() - 43200000, // 12 horas atrás
   },
 ];
-];
 
 // Populate store with seed data
 seedTasks.forEach((task) => tasksStore.set(task.id, task));

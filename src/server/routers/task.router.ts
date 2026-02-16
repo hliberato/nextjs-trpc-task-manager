@@ -43,8 +43,9 @@ export const taskRouter = router({
    * - No duplicate items if data changes during pagination
    * - Efficient for sorted time-based data
    *
-   * NOTE: Includes artificial 1.5s delay to simulate real server latency
+   * NOTE: Includes artificial 1.5s delay ONLY for subsequent pages (infinite scroll)
    * This helps demonstrate loading states during development/evaluation
+   * First page loads instantly to avoid delay after create/update operations
    * In production, remove setTimeout to get instant in-memory responses
    */
   infiniteList: publicProcedure
@@ -55,12 +56,16 @@ export const taskRouter = router({
     )
     .query(async ({ input }) => {
       /**
-       * FAKE DELAY: Simulates server response time
-       * Purpose: Demonstrate loading UI during infinite scroll
+       * FAKE DELAY: Simulates server response time for infinite scroll
+       * Purpose: Demonstrate loading UI during infinite scroll pagination
        * Duration: 1.5 seconds
+       * Applied ONLY to subsequent pages (when cursor exists)
+       * First page is instant to avoid delay after create/edit operations
        * TODO: Remove this setTimeout in production for instant responses
        */
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      if (input.cursor !== undefined) {
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+      }
 
       const allTasks = Array.from(tasksStore.values()).sort(
         (a, b) => b.dataCriacao - a.dataCriacao
