@@ -11,14 +11,19 @@ export default function TaskForm() {
   const utils = trpc.useUtils();
 
   const createTask = trpc.task.create.useMutation({
-    onSuccess: () => {
+    onSuccess: (newTask) => {
       // Reset form
       setTitulo('');
       setDescricao('');
       setError('');
 
-      // Invalidate task list to refresh data
-      utils.task.list.invalidate();
+      // Update cache with new task
+      const currentData = utils.task.list.getData();
+      if (currentData) {
+        utils.task.list.setData(undefined, [newTask, ...currentData]);
+      } else {
+        utils.task.list.invalidate();
+      }
     },
     onError: (err) => {
       setError(err.message ?? 'Unexpected error');
@@ -46,65 +51,69 @@ export default function TaskForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="w-full max-w-lg mx-auto p-6 bg-white rounded-lg shadow-md"
+      className="bg-white rounded-xl border border-gray-200 shadow-sm p-8"
     >
-      <h2 className="text-2xl font-bold mb-6 text-gray-800">Nova Tarefa</h2>
+      <h2 className="text-2xl font-semibold text-gray-900 mb-8">
+        Create New Task
+      </h2>
 
-      <div className="mb-4">
-        <label
-          htmlFor="titulo"
-          className="block text-sm font-medium text-gray-700 mb-2"
-        >
-          Título <span className="text-red-500">*</span>
-        </label>
-        <input
-          id="titulo"
-          type="text"
-          value={titulo}
-          onChange={(e) => {
-            setTitulo(e.target.value);
-            if (error) setError('');
-          }}
-          disabled={isSubmitting}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-          placeholder="Digite o título da tarefa"
-        />
-      </div>
-
-      <div className="mb-6">
-        <label
-          htmlFor="descricao"
-          className="block text-sm font-medium text-gray-700 mb-2"
-        >
-          Descrição
-        </label>
-        <textarea
-          id="descricao"
-          value={descricao}
-          onChange={(e) => {
-            setDescricao(e.target.value);
-            if (error) setError('');
-          }}
-          disabled={isSubmitting}
-          rows={4}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed resize-none"
-          placeholder="Digite a descrição da tarefa (opcional)"
-        />
-      </div>
-
-      {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-          <p className="text-sm text-red-600">{error}</p>
+      <div className="space-y-6">
+        <div>
+          <label
+            htmlFor="titulo"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            Title <span className="text-red-500">*</span>
+          </label>
+          <input
+            id="titulo"
+            type="text"
+            value={titulo}
+            onChange={(e) => {
+              setTitulo(e.target.value);
+              if (error) setError('');
+            }}
+            disabled={isSubmitting}
+            className="w-full px-4 py-2.5 text-gray-900 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed transition-colors"
+            placeholder="Enter task title"
+          />
         </div>
-      )}
 
-      <button
-        type="submit"
-        disabled={isSubmitting}
-        className="w-full bg-blue-600 text-white py-2 px-4 rounded-md font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-      >
-        {isSubmitting ? 'Criando...' : 'Criar Tarefa'}
-      </button>
+        <div>
+          <label
+            htmlFor="descricao"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            Description
+          </label>
+          <textarea
+            id="descricao"
+            value={descricao}
+            onChange={(e) => {
+              setDescricao(e.target.value);
+              if (error) setError('');
+            }}
+            disabled={isSubmitting}
+            rows={4}
+            className="w-full px-4 py-2.5 text-gray-900 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed resize-none transition-colors"
+            placeholder="Enter task description (optional)"
+          />
+        </div>
+
+        {error && (
+          <div className="p-4 bg-red-50 border border-red-100 rounded-lg">
+            <p className="text-sm text-red-700">{error}</p>
+          </div>
+        )}
+
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full bg-blue-600 text-white py-2.5 px-4 rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed transition-all duration-200"
+        >
+          {isSubmitting ? 'Creating...' : 'Create Task'}
+        </button>
+      </div>
     </form>
   );
 }
