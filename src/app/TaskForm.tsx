@@ -3,6 +3,14 @@
 import { trpc } from '@/utils/trpc';
 import { useState } from 'react';
 
+/**
+ * TaskForm: Component for creating new tasks
+ *
+ * Implementation decisions:
+ * - Client Component ('use client') because it uses interactivity (useState, events)
+ * - Controlled inputs via React state (single source of truth)
+ * - Dual validation: client-side (UX) + server-side (security)
+ */
 export default function TaskForm() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -10,6 +18,20 @@ export default function TaskForm() {
 
   const utils = trpc.useUtils();
 
+  /**
+   * Mutation hook for task creation
+   *
+   * Cache strategy: Optimistic Updates via setData
+   * Why not use invalidate()?
+   * - invalidate() forces full server refetch
+   * - with SSR + initialData, refetch doesn't happen (staleTime: Infinity)
+   * - setData() updates cache manually = instant UI
+   *
+   * Benefits:
+   * - Zero perceived delay for user
+   * - Fewer server requests
+   * - Better UX even with slow connection
+   */
   const createTask = trpc.task.create.useMutation({
     onSuccess: (newTask) => {
       setTitle('');
@@ -18,8 +40,10 @@ export default function TaskForm() {
 
       const currentData = utils.task.list.getData();
       if (currentData) {
+        // Optimistic update: adds new task to top of list
         utils.task.list.setData(undefined, [newTask, ...currentData]);
       } else {
+        // Fallback: if cache empty, force refetch
         utils.task.list.invalidate();
       }
     },
@@ -28,6 +52,14 @@ export default function TaskForm() {
     },
   });
 
+  /**
+   * Submit handler with client-side validation
+   *
+   * Decision: validate before sending (fail-fast)
+   * - Saves unnecessary server request
+   * - Instant feedback for user
+   * - trim() removes extra spaces (sanitization)
+   */
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');

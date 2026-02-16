@@ -7,12 +7,34 @@ import type { AppRouter } from '@/server/root';
 import { inferRouterOutputs } from '@trpc/server';
 type RouterOutput = inferRouterOutputs<AppRouter>;
 
+/**
+ * Type-safe Task type inferred from tRPC router output
+ *
+ * Benefits:
+ * - Automatically synchronized with server types
+ * - No manual type definitions needed
+ * - Refactoring is type-safe across client/server boundary
+ */
 type Task = RouterOutput['task']['list'][number];
 
 type Props = {
   task: Task;
 };
 
+/**
+ * TaskItem: Component for displaying and editing individual tasks
+ *
+ * Features:
+ * - Inline editing (toggle between view/edit modes)
+ * - Delete confirmation dialog
+ * - Optimistic updates for instant UI feedback
+ * - Loading states during mutations
+ *
+ * State machine:
+ * - View mode: displays task with Edit/Delete buttons
+ * - Edit mode: shows form with Save/Cancel buttons
+ * - Delete confirmation: shows warning with Confirm/Cancel buttons
+ */
 export default function TaskItem({ task }: Props) {
   const [isEditing, setIsEditing] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
@@ -22,6 +44,14 @@ export default function TaskItem({ task }: Props) {
 
   const utils = trpc.useUtils();
 
+  /**
+   * Update mutation with optimistic cache update
+   *
+   * Strategy: Manually update cache instead of refetch
+   * - Finds task by ID and replaces it with updated version
+   * - Preserves list order and other tasks
+   * - Instant UI update without server roundtrip
+   */
   const updateTask = trpc.task.update.useMutation({
     onSuccess: (updatedTask) => {
       setIsEditing(false);
@@ -42,6 +72,14 @@ export default function TaskItem({ task }: Props) {
     },
   });
 
+  /**
+   * Delete mutation with optimistic cache update
+   *
+   * Strategy: Filter out deleted task from cache
+   * - Removes task immediately from UI
+   * - No refetch needed
+   * - If mutation fails, React Query will rollback automatically
+   */
   const deleteTask = trpc.task.delete.useMutation({
     onSuccess: () => {
       const currentData = utils.task.list.getData();

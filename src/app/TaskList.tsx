@@ -12,6 +12,23 @@ type Props = {
   initialData: TaskListOutput;
 };
 
+/**
+ * TaskList: Component for displaying list of tasks with SSR support
+ *
+ * SSR Strategy:
+ * - Receives `initialData` from server-side page.tsx
+ * - React Query hydrates cache with SSR data
+ * - `staleTime: Infinity` prevents automatic refetching (optimistic updates handle sync)
+ *
+ * Benefits:
+ * - Zero loading state on initial render (data already available)
+ * - SEO friendly (tasks rendered server-side)
+ * - Better perceived performance
+ *
+ * Cache updates:
+ * - Handled by child components (TaskForm, TaskItem) via setData()
+ * - No automatic refetch needed since we manually update cache
+ */
 export default function TaskList({ initialData }: Props) {
   const { data } = trpc.task.list.useQuery(undefined, {
     initialData,
