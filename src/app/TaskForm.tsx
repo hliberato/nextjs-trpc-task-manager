@@ -21,7 +21,7 @@ export default function TaskForm() {
       utils.task.list.invalidate();
     },
     onError: (err) => {
-      setError(err.message);
+      setError(err.message ?? 'Unexpected error');
     },
   });
 

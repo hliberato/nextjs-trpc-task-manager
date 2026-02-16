@@ -32,7 +32,7 @@ export default function TaskItem({ task }: Props) {
       utils.task.list.invalidate();
     },
     onError: (err) => {
-      setError(err.message);
+      setError(err.message ?? 'Unexpected error');
     },
   });
 
@@ -42,7 +42,7 @@ export default function TaskItem({ task }: Props) {
       utils.task.list.invalidate();
     },
     onError: (err) => {
-      setError(err.message);
+      setError(err.message ?? 'Unexpected error');
     },
   });
 
