@@ -33,8 +33,8 @@ export const taskRouter = router({
    * INFINITE LIST: Paginated task list for infinite scroll
    *
    * Cursor-based pagination:
-   * - First page: returns initial 3 tasks
-   * - Subsequent pages: returns 3 tasks per page
+   * - First page: returns initial 9 tasks (ensures screen is filled and sentinel is below fold)
+   * - Subsequent pages: returns 3 tasks per page (smooth scrolling)
    * - Cursor: timestamp of last task in current page
    * - Next cursor: timestamp to fetch older tasks
    *
@@ -42,6 +42,10 @@ export const taskRouter = router({
    * - Handles real-time updates (new tasks don't shift pages)
    * - No duplicate items if data changes during pagination
    * - Efficient for sorted time-based data
+   *
+   * NOTE: Includes artificial 1.5s delay to simulate real server latency
+   * This helps demonstrate loading states during development/evaluation
+   * In production, remove setTimeout to get instant in-memory responses
    */
   infiniteList: publicProcedure
     .input(
@@ -49,13 +53,22 @@ export const taskRouter = router({
         cursor: z.number().optional(), // timestamp of last task from previous page
       })
     )
-    .query(({ input }) => {
+    .query(async ({ input }) => {
+      /**
+       * FAKE DELAY: Simulates server response time
+       * Purpose: Demonstrate loading UI during infinite scroll
+       * Duration: 1.5 seconds
+       * TODO: Remove this setTimeout in production for instant responses
+       */
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
       const allTasks = Array.from(tasksStore.values()).sort(
         (a, b) => b.dataCriacao - a.dataCriacao
       );
 
-      // Determine page size: 3 for all pages
-      const limit = 3;
+      // Determine page size: 9 for first page, 3 for subsequent
+      const isFirstPage = input.cursor === undefined;
+      const limit = isFirstPage ? 9 : 3;
 
       // Filter tasks older than cursor (if cursor exists)
       const filteredTasks = input.cursor

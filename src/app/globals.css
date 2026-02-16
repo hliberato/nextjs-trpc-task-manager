@@ -17,4 +17,23 @@
   .animate-slide-in-right {
     animation: slide-in-right 0.3s ease-out;
   }
+
+  @keyframes loading-dots {
+    0%,
+    20% {
+      content: '.';
+    }
+    40% {
+      content: '..';
+    }
+    60%,
+    100% {
+      content: '...';
+    }
+  }
+
+  .loading-dots::after {
+    content: '...';
+    animation: loading-dots 1.5s infinite;
+  }
 }

@@ -20,7 +20,7 @@ type Props = {
  * - Uses tRPC's useInfiniteQuery for cursor-based pagination
  * - Intersection Observer detects when user scrolls to bottom
  * - Automatically loads next page (3 tasks) when sentinel is visible
- * - First page shows 3 tasks (from SSR), subsequent pages load 3 each
+ * - First page shows 9 tasks (from SSR) to ensure sentinel is below viewport, subsequent pages load 3 each
  *
  * Benefits:
  * - Better performance with large datasets
@@ -37,9 +37,9 @@ export default function TaskList({ initialData }: Props) {
         initialData: {
           pages: [
             {
-              tasks: initialData.slice(0, 3),
+              tasks: initialData.slice(0, 9),
               nextCursor:
-                initialData.length > 3 ? initialData[2].dataCriacao : null,
+                initialData.length > 9 ? initialData[8].dataCriacao : null,
             },
           ],
           pageParams: [undefined],
@@ -50,13 +50,29 @@ export default function TaskList({ initialData }: Props) {
 
   // Sentinel element ref for intersection observer
   const sentinelRef = useRef<HTMLDivElement>(null);
+  // Flag to prevent auto-triggering on initial render
+  const hasUserScrolled = useRef(false);
+
+  /**
+   * Track user scroll to enable infinite scroll only after interaction
+   * Prevents automatic triggering when sentinel is visible on page load
+   */
+  useEffect(() => {
+    const handleScroll = () => {
+      hasUserScrolled.current = true;
+    };
+
+    window.addEventListener('scroll', handleScroll, { once: true });
+
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   /**
    * Intersection Observer for infinite scroll trigger
    *
    * Watches sentinel element at bottom of list
    * When sentinel becomes visible, fetches next page
-   * Disconnects when no more pages available
+   * Only triggers after user has scrolled at least once
    */
   useEffect(() => {
     const sentinel = sentinelRef.current;
@@ -65,14 +81,19 @@ export default function TaskList({ initialData }: Props) {
     const observer = new IntersectionObserver(
       (entries) => {
         const entry = entries[0];
-        // If sentinel is visible and there's more data, fetch next page
-        if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
+        // Only fetch if user has scrolled and sentinel is visible
+        if (
+          entry.isIntersecting &&
+          hasNextPage &&
+          !isFetchingNextPage &&
+          hasUserScrolled.current
+        ) {
           fetchNextPage();
         }
       },
       {
-        threshold: 0.1, // Trigger when 10% of sentinel is visible
-        rootMargin: '100px', // Start loading 100px before reaching sentinel
+        threshold: 0, // Trigger as soon as any part of sentinel is visible
+        rootMargin: '0px', // No anticipatory loading - wait until user reaches the end
       }
     );
 
@@ -139,14 +160,23 @@ export default function TaskList({ initialData }: Props) {
 
         {/* Loading indicator while fetching next page */}
         {isFetchingNextPage && (
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 text-center">
+          <div className="py-8 text-center">
             <div className="animate-spin w-6 h-6 border-3 border-blue-600 border-t-transparent rounded-full mx-auto"></div>
-            <p className="mt-2 text-sm text-gray-600">Carregando mais...</p>
+            <p className="mt-3 text-sm text-gray-600 loading-dots">
+              Carregando mais tarefas
+            </p>
           </div>
         )}
 
         {/* Sentinel element for intersection observer */}
         <div ref={sentinelRef} className="h-4" aria-hidden="true" />
+
+        {/* End of list indicator */}
+        {!hasNextPage && allTasks.length > 0 && (
+          <div className="text-center py-6">
+            <p className="text-sm text-gray-500">Você chegou ao fim da lista</p>
+          </div>
+        )}
       </div>
     </div>
   );
