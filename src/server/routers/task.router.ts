@@ -76,6 +76,20 @@ export const taskRouter = router({
     }),
 
   /**
+   * GET BY ID: Returns a single task by ID
+   *
+   * Used for edit page to fetch task data
+   * - Efficient: fetches only one task instead of all
+   * - Returns null if not found (handled by page)
+   */
+  getById: publicProcedure
+    .input(z.object({ id: z.string() }))
+    .query(({ input }) => {
+      const task = tasksStore.get(input.id);
+      return task ?? null;
+    }),
+
+  /**
    * CREATE: Creates new task
    *
    * Implementation decisions:

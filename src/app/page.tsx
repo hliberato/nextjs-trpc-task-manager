@@ -63,6 +63,23 @@ export default async function Home() {
         </div>
 
         <TaskList initialData={tasks} />
+
+        {/* Footer */}
+        <footer className="mt-16 pt-8 border-t border-gray-200 text-center">
+          <p className="text-sm text-gray-600">
+            © {new Date().getFullYear()} - Gerenciador de Tarefas
+          </p>
+          <p className="mt-2 text-sm text-gray-500">
+            <a
+              href="https://github.com/hliberato/nextjs-trpc-task-manager"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-700 hover:underline transition-colors"
+            >
+              Ver código no GitHub
+            </a>
+          </p>
+        </footer>
       </div>
     </main>
   );

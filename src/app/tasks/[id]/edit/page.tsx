@@ -24,8 +24,7 @@ export default async function EditTaskPage({ params }: PageProps) {
   const { id } = await params;
   const caller = await getServerCaller();
 
-  const tasks = await caller.task.list();
-  const task = tasks.find((t) => t.id === id);
+  const task = await caller.task.getById({ id });
 
   if (!task) {
     notFound();
