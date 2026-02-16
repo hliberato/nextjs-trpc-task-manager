@@ -22,6 +22,31 @@ Full-stack task management application demonstrating modern web architecture wit
 
 ---
 
+## Getting Started
+
+### Installation
+
+```bash
+yarn install
+```
+
+### Development
+
+```bash
+yarn dev          # Start dev server (localhost:3000)
+yarn typecheck    # Type checking
+yarn lint         # ESLint
+```
+
+### Production
+
+```bash
+yarn build        # Build for production
+yarn start        # Start production server
+```
+
+---
+
 ## Architecture
 
 ### Project Structure
@@ -180,83 +205,3 @@ mutation({ id: string }) => Task
 ```
 
 Throws `NOT_FOUND` if task doesn't exist. Returns deleted task.
-
----
-
-## Getting Started
-
-### Installation
-
-```bash
-yarn install
-```
-
-### Development
-
-```bash
-yarn dev          # Start dev server (localhost:3000)
-yarn typecheck    # Type checking
-yarn lint         # ESLint
-```
-
-### Production
-
-```bash
-yarn build        # Build for production
-yarn start        # Start production server
-```
-
----
-
-## Implementation Highlights
-
-### Type Safety
-
-- Zero type casts or assertions
-- Discriminated unions for state management
-- Type-safe error handling with TRPCError
-- Inferred types from Zod schemas
-
-### Performance
-
-- SSR eliminates initial loading state
-- Optimistic updates for instant feedback
-- React Query deduplication
-- Minimal bundle size (no heavy libraries)
-
-### Code Quality
-
-- Consistent naming conventions
-- Single responsibility principle
-- Separation of concerns (client/server)
-- No comments (self-documenting code)
-- Error handling at every layer
-
-### Best Practices
-
-- Controlled components for forms
-- Proper error boundaries
-- Loading states for async operations
-- Input sanitization (trim)
-- Client and server validation
-
----
-
-## Technical Constraints
-
-- **No database**: Data resets on restart
-- **No authentication**: Public access
-- **No persistence**: Memory-only storage
-- **Single instance**: No horizontal scaling
-
-These are intentional simplifications focusing on core architectural patterns.
-
----
-
-## Learn More
-
-- [Next.js App Router](https://nextjs.org/docs/app)
-- [tRPC Documentation](https://trpc.io/docs)
-- [React Query](https://tanstack.com/query/latest)
-- [Zod](https://zod.dev/)
-- [TypeScript](https://www.typescriptlang.org/)
